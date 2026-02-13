@@ -79,3 +79,82 @@
 //     </form>
 //   );
 // }
+
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import API from "../api/axios";
+import { toast } from "react-toastify";
+
+export default function Register() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { setUser } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      setLoading(true);
+
+      const { data } = await API.post("/auth/register", {
+        name,
+        email,
+        password,
+      });
+
+      setUser(data); // save user in context
+      toast.success("Registration successful 🎉");
+
+      navigate("/home");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Registration failed ❌");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ textAlign: "center" }}>
+      <h2>Register</h2>
+
+      <input
+        type="text"
+        placeholder="Enter name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        required
+      />
+      <br />
+      <br />
+
+      <input
+        type="email"
+        placeholder="Enter email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <br />
+      <br />
+
+      <input
+        type="password"
+        placeholder="Enter password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      <br />
+      <br />
+
+      <button type="submit" disabled={loading}>
+        {loading ? "Registering..." : "Register"}
+      </button>
+    </form>
+  );
+}
